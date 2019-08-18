@@ -1,0 +1,46 @@
+const { Schema, model } = require('mongoose');
+const bcryptService = require('../services/bcrypt.service');
+
+const schema = new Schema(
+  {
+    name: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 150,
+      required: true
+    },
+    email: {
+      type: String,
+      index: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: 5,
+      maxlength: 150,
+      required: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    }
+  },
+  { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
+);
+
+schema.post('save', user => {
+  user.password = bcryptService().hashPassword(user);
+});
+
+schema.methods.toJSON = function() {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
+
+module.exports = model('user', schema);

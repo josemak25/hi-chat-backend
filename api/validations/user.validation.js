@@ -20,5 +20,17 @@ module.exports = {
         .required(),
       user_type: Joi.string()
     }
+  },
+  loginUser: {
+    body: {
+      email: Joi.string()
+        .email()
+        .max(200)
+        .required(),
+      password: Joi.string()
+        .min(6)
+        .max(255)
+        .required()
+    }
   }
 };

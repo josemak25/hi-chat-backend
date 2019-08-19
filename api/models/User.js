@@ -33,8 +33,13 @@ const schema = new Schema(
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
 );
 
-schema.post('save', user => {
-  user.password = bcryptService().hashPassword(user);
+schema.pre('save', async function(next) {
+  try {
+    this.password = await bcryptService().hashPassword(this);
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 schema.methods.toJSON = function() {

@@ -51,9 +51,9 @@ const UserController = () => {
     try {
       const { email, password } = req.body;
 
-      const user = await UserQuery.findByEmail(email);
+      const userExist = await UserQuery.getOne({ email });
 
-      if (!user) {
+      if (!userExist) {
         return res.json(
           sendResponse(
             httpStatus.NOT_FOUND,
@@ -64,7 +64,7 @@ const UserController = () => {
         );
       }
 
-      const correctDetails = await bcryptService().comparePassword(password, user.password);
+      const correctDetails = bcryptService().comparePassword(password, userExist.password);
 
       if (!correctDetails) {
         return res.json(
@@ -78,7 +78,7 @@ const UserController = () => {
       }
 
       // to issue token with the user object, convert it to JSON
-      const token = authService().issue(user.toJSON());
+      const token = authService().issue(userExist.toJSON());
 
       return res.json(sendResponse(httpStatus.OK, 'success', user, null, token));
     } catch (err) {

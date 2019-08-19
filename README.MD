@@ -1,27 +1,28 @@
-# express-rest-api-boilerplate
+# circa express-rest-api-backend
 
-> Express REST API with JWT Authentication and support for sqlite, mysql, and postgresql
+> Circa Express REST API with JWT Authentication mongoose and mongodb
 
 - authentication via [JWT](https://jwt.io/)
 - routes mapping via [express-routes-mapper](https://github.com/aichbauer/express-routes-mapper)
-- support for [sqlite](https://www.sqlite.org/), [mysql](https://www.mysql.com/), and [postgresql](https://www.postgresql.org/)
+- database [mongodb](https://www.mongodb.com/)
 - environments for `development`, `testing`, and `production`
 - linting via [eslint](https://github.com/eslint/eslint)
 - integration tests running with [Jest](https://github.com/facebook/jest)
 - built with [npm sripts](#npm-scripts)
-- example for User model and User controller, with jwt authentication, simply type `npm i` and `npm start`
+- example for User model and User controller, with jwt authentication, simply type `yarn` and `yarn start`
 
 ## Table of Contents
 
 - [Install & Use](#install-and-use)
 - [Folder Structure](#folder-structure)
-- [Controllers](#controllers)
-  - [Create a Controller](#create-a-controller)
-- [Models](#models)
-  - [Create a Model](#create-a-model)
-- [Policies](#policies)
-  - [auth.policy](#authpolicy)
-- [Services](#services)
+- [Api](#api)
+  - [Controllers](#controllers)
+    - [Create a Controller](#create-a-controller)
+    - [Models](#models)
+      - [Create a Model](#create-a-model)
+  - [Policies](#policies)
+    - [auth.policy](#authpolicy)
+  - [Services](#services)
 - [Config](#config)
   - [Connection and Database](#connection-and-database)
 - [Routes](#routes)
@@ -43,25 +44,12 @@ then
 
 ```sh
 # cd into project root
+# install all dependencipes
 $ yarn
-# to use mysql
-$ yarn add mysql2
-# to use postgresql
-$ yarn add pg pg-hstore
+# if you use npm run
+$ npm install
 # start the api
 $ yarn start
-```
-
-or
-
-```sh
-# cd into project root
-$ npm i
-# to use mysql
-$ npm i mysql2 -S
-# to use postgresql
-$ npm i -S pg pg-hstore
-# start the api
 $ npm start
 ```
 
@@ -72,8 +60,9 @@ sqlite is supported out of the box as it is the default.
 This boilerplate has 4 main directories:
 
 - api - for controllers, models, services, etc.
-- config - for routes, database, etc.
-- db - this is only a dir for the sqlite db, the default for NODE_ENV development
+- config - for database, etc.
+- helpers - this is only a dir for all utility/helper functions.
+- routes - this is for routes
 - test - using [Jest](https://github.com/facebook/jest)
 
 ## Controllers
@@ -82,7 +71,7 @@ This boilerplate has 4 main directories:
 
 Controllers in this boilerplate have a naming convention: `ModelnameController.js` and uses an object factory pattern.
 To use a model inside of your controller you have to require it.
-We use [Sequelize](http://docs.sequelizejs.com/) as ORM, if you want further information read the [Docs](http://docs.sequelizejs.com/).
+We use [Mongoose](https://mongoosejs.com/) as ODM, if you want further information read the [Docs](https://mongoosejs.com/docs/).
 
 Example Controller for all **CRUD** oparations:
 
@@ -220,93 +209,109 @@ model.exports = ModelController;
 
 ### Create a Model
 
-Models in this boilerplate have a naming convention: `Model.js` and uses [Sequelize](http://docs.sequelizejs.com/) to define our Models, if you want further information read the [Docs](http://docs.sequelizejs.com/).
+Models in this boilerplate have a naming convention: `Model.js` and uses [Mongoose](https://mongoosejs.com/) to define our Models, if you want further information read the [Docs](https://mongoosejs.com/docs/).
 
 Example User Model:
 
 ```js
-const Sequelize = require('sequelize');
+const { Schema, model } = require('mongoose');
 
 // for encrypting our passwords
 const bcryptSevice = require('../services/bcrypt.service');
 
-// the DB connection
-const sequelize = require('../../config/database');
-
-// hooks are functions that can run before or after a specific event
-const hooks = {
-  beforeCreate(user) {
-    user.password = bcryptSevice.password(user);
-  },
-};
-
-// naming the table in DB
-const tableName = 'users';
-
 // the actual model
-const User = sequelize.define('User', {
-  username: {
-    type: Sequelize.STRING,
-    unique: true,
+const schema = new Schema(
+  {
+    name: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 150,
+      required: true
+    },
+    email: {
+      type: String,
+      index: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: 5,
+      maxlength: 150,
+      required: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    }
   },
-  password: {
-    type: Sequelize.STRING,
-  },
-}, { hooks, tableName });
+  { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } }
+);
 
 // instead of using instanceMethod
-// in sequelize > 4 we are writing the function
+// in mongoose ˆ5 we are writing the function
 // to the prototype object of our model.
 // as we do not want to share sensitive data, the password
 // field gets ommited before sending
-User.prototype.toJSON = function () {
-  const values = Object.assign({}, this.get());
-
-  delete values.password;
-
-  return values;
+schema.methods.toJSON = function() {
+  const user = this.toObject();
+  delete user.password;
+  return user;
 };
 
 // IMPORTANT
 // don't forget to export the Model
-module.exports = User;
+module.exports = model('user', schema);
+
+// hooks are functions that can run before or after a specific event
+schema.post('save', user => {
+  user.password = bcryptService().hashPassword(user);
+});
 ```
 
 ## Policies
 
-Policies are middleware functions that can run before hitting a apecific or more specified route(s).
+Middlewares are functions that can run before hitting a apecific or more specified route(s).
 
-Example policy:
+Example isAdmin:
 
 Only allow if the user is marked as admin.
 
 > Note: this is not a secure example, only for presentation puposes
 
 ```js
+const httpStatus = require('http-status');
+const sendResponse = require('../../helpers/response');
+
 module.exports = (req, res, next) => {
-  if(req.body.userrole === 'admin') {
-    // do some verification stuff
-    const verified = verifyAdmin(req.body.userid);
+  const { isAdmin } = req.token;
 
-    if(verified) {
-      return next();
-    }
-
-    return res.status(401).json({ msg: 'Unauthorized' });
+  if (!isAdmin) {
+    return res.json(
+      sendResponse(
+        httpStatus.UNAUTHORIZED,
+        'You are not Authorized to perform this operation!',
+        null
+      )
+    );
   }
 
-  return res.status(401).json({ msg: 'Unauthorized' });
+  next();
 };
 ```
 
-To use this policy on all routes that only admins are allowed:
+To use this middleware on all routes that only admins are allowed:
 
 api.js
 
 ```js
-const adminPolicy = require('./policies/admin.policy');
+const isAdmin = require('../api/middlewares/isAdmin');
 
-app.all('/admin/*', (req, res, next) => adminPolicy(req,res,next));
+app.all('/admin/*', (req, res, next) => isAdmin(req, res, next));
 ```
 
 Or for one specific route
@@ -314,13 +319,16 @@ Or for one specific route
 api.js
 
 ```js
-const adminPolicy = require('./policies/admin.policy');
+const isAdmin = require('../api/middlewares/isAdmin');
 
-app.get('/admin/myroute',
-  (req, res, next) => adminPolicy(req,res,next),
-  (req, res) => {
-  //do some fancy stuff
-});
+const privateRoutes = {
+  'GET /users': {
+    path: 'UserController.getAll',
+    middlewares: [isAdmin]
+  }
+};
+
+module.exports = privateRoutes;
 ```
 
 ## auth.policy
@@ -332,10 +340,11 @@ To use this policy on all routes of a specific prefix:
 
 app.js
 
-```js
-app.use('/prefix', yourRoutes);
-app.all('/prefix', (req, res, next) => auth(req, res, next));
-```
+````js
+const auth = require('./policies/auth.policy');
+
+// secure your private routes with jwt authentication middleware
+app.all('/api/v1/private/*', (req, res, next) => auth(req, res, next));```
 
 or to use this policy on one specific route:
 
@@ -347,7 +356,7 @@ app.get('/specificRoute',
   (req, res) => {
   // do some fancy stuff
 });
-```
+````
 
 ## Services
 
@@ -355,28 +364,27 @@ Services are little useful snippets, or calls to another API that are not the ma
 
 Example service:
 
-Get comments from another API:
+Get user password hashed on signup or compare user passowrd on login:
 
 ```js
-const commentService = () => {
-  const getComments = async () => {
-    try {
-      const res = await fetch('https://jsonplaceholder.typicode.com/comments', {
-        method: 'get'
-      });
+require('dotenv').config();
+const bcrypt = require('bcrypt');
 
-      // do some fancy stuff with the response
-    } catch (err) {
-      // handle a error
-    }
+const bcryptService = () => {
+  const hashPassword = ({ password }) => {
+    const salt = bcrypt.genSaltSync(Number(process.env.HASHING_SALT));
+    return bcrypt.hashSync(password, salt);
   };
 
+  const comparePassword = (pw, hash) => bcrypt.compareSync(pw, hash);
+
   return {
-    getComments,
+    hashPassword,
+    comparePassword
   };
 };
 
-module.exports = commentService;
+module.exports = bcryptService;
 ```
 
 ## Config
@@ -385,33 +393,40 @@ Holds all the server configurations.
 
 ## Connection and Database
 
-> Note: if you use msql make sure mysql server is running on the machine
-
-> Note: if you use postgres make sure postgres server is running on the machine
+> Note: as for this project we using mongodb so make sure mongodb server is running on the machine
 
 This two files are the way to establish a connaction to a database.
 
-You only need to touch connection.js, default for `development` is sqlite, but it is easy as typing `mysql` or `postgres` to switch to another db.
+You only need to touch env.js, default for `development`
 
-> Note: to run a mysql db install these package with: `yarn add mysql2` or `npm i mysql2 -S`
-
-> Note: to run a postgres db run these package with: `yarn add pg pg-hstore` or `npm i -S pg pg-hstore`
+> Note: to connect to a mongodb running database run these package with: `yarn` or `npm install` and start the app with `yarn start` or `npm start`
 
 Now simple configure the keys with your credentials.
 
 ```js
-{
-  database: 'databasename',
-  username: 'username',
-  password: 'password',
-  host: 'localhost',
-  dialect: 'sqlite' || 'mysql' || 'postgres',
-}
+// require and configure dotenv, will load vars in .env in PROCESS.ENV
+require('dotenv').config();
+
+const config = {
+  env: envVars.NODE_ENV,
+  port: envVars.PORT,
+  mongooseDebug: envVars.MONGOOSE_DEBUG,
+  jwtSecret: envVars.JWT_SECRET,
+  jwtExpirationInterval: envVars.JWT_EXPIRATION_INTERVAL,
+  mongo: {
+    host: process.env.NODE_ENV === 'development' ? envVars.MONGO_HOST : envVars.MONGO_HOST_TEST,
+    port: envVars.MONGO_PORT
+  },
+  clientSideUrl: envVars.CLIENT_SIDE_URL,
+  circa_email: envVars.CIRCA_DEV_EMAIL
+};
+
+module.exports = config;
 ```
 
 To not configure the production code.
 
-To start the DB, add the credentials for production. add `environment variables` by typing e.g. `export DB_USER=yourusername` before starting the api.
+To start the DB, add the credentials for production. add `environment variables` by adding your configs to the .env files e.g. check the .env-example file for more understanding read the [docs](https://github.com/dotenv/dotenv/README.md) from `dotenv`. before starting the api.
 
 ## Routes
 
@@ -433,7 +448,7 @@ const userRoutes = {
   'GET /users': 'UserController.getAll',
   'GET /user/:id': 'UserController.get',
   'PUT /user/:id': 'UserController.update',
-  'DELETE /user/': 'UserController.destroy',
+  'DELETE /user/': 'UserController.destroy'
 };
 
 module.exports = userRoutes;
@@ -446,7 +461,7 @@ const userRoutes = require('./userRoutes');
 
 const config = {
   allTheOtherStuff,
-  userRoutes,
+  userRoutes
 };
 
 module.exports = config;
@@ -483,10 +498,7 @@ Example `GET /user` from last example with prefix `prefix`:
 
 ```js
 const request = require('supertest');
-const {
-  beforeAction,
-  afterAction,
-} = require('../setup/_setup');
+const { beforeAction, afterAction } = require('../setup/_setup');
 
 let api;
 
@@ -576,4 +588,4 @@ Optional:
 
 ## LICENSE
 
-MIT © Diaspora Invest
+MIT © Circa

@@ -1,9 +1,7 @@
-var express = require('express');
-var router = express.Router();
+const privateRoutes = require('./privateRoutes');
+const publicRoutes = require('./publicRoutes');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
-
-module.exports = router;
+module.exports = {
+  privateRoutes,
+  publicRoutes
+};

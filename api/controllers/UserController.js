@@ -64,9 +64,9 @@ const UserController = () => {
         );
       }
 
-      const correctDetails = bcryptService().comparePassword(password, userExist.password);
+      const correctPassword = await bcryptService().comparePassword(password, userExist.password);
 
-      if (!correctDetails) {
+      if (!correctPassword) {
         return res.json(
           sendResponse(
             httpStatus.BAD_REQUEST,
@@ -80,7 +80,7 @@ const UserController = () => {
       // to issue token with the user object, convert it to JSON
       const token = authService().issue(userExist.toJSON());
 
-      return res.json(sendResponse(httpStatus.OK, 'success', user, null, token));
+      return res.json(sendResponse(httpStatus.OK, 'success', userExist, null, token));
     } catch (err) {
       next(err);
     }

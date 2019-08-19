@@ -3,11 +3,10 @@ const bcrypt = require('bcrypt');
 
 const bcryptService = () => {
   const hashPassword = ({ password }) => {
-    const salt = bcrypt.genSaltSync(Number(process.env.HASHING_SALT));
-    return bcrypt.hashSync(password, salt);
+    return bcrypt.hash(password, Number(process.env.HASHING_SALT));
   };
 
-  const comparePassword = (pw, hash) => bcrypt.compareSync(pw, hash);
+  const comparePassword = (password, hash) => bcrypt.compare(password, hash);
 
   return {
     hashPassword,

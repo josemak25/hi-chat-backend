@@ -7,12 +7,11 @@ const methodOverride = require('method-override');
 const cors = require('cors');
 const expressWinston = require('express-winston');
 const helmet = require('helmet');
-const mapRoutes = require('express-routes-mapper');
-const winstonInstance = require('../config/winston');
-const routes = require('../routes/index');
-const error = require('../config/errors');
+const winstonInstance = require('./config/winston');
+const { publicRoutes, privateRoutes } = require('./routes/index');
+const error = require('./config/errors');
 const auth = require('./policies/auth.policy');
-const { env } = require('../config/env');
+const { env } = require('./config/env');
 
 const app = express();
 // secure apps by setting various HTTP headers
@@ -42,16 +41,12 @@ if (env === 'development') {
   );
 }
 
-// mount all routes on /api path
-const mappedOpenRoutes = mapRoutes(routes.publicRoutes, 'api/controllers/');
-const mappedAuthRoutes = mapRoutes(routes.privateRoutes, 'api/controllers/');
-
 // secure your private routes with jwt authentication middleware
 app.all('/api/v1/private/*', (req, res, next) => auth(req, res, next));
 
 // fill routes for express application
-app.use('/api/v1/public', mappedOpenRoutes);
-app.use('/api/v1/private', mappedAuthRoutes);
+app.use('/api/v1/public', publicRoutes);
+app.use('/api/v1/private', privateRoutes);
 
 // if error is not an instanceOf APIError, convert it.
 app.use(error.converter);

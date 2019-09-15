@@ -26,10 +26,10 @@ const envVarsSchema = Joi.object({
   MONGO_PORT: Joi.number().default(27017),
   CLIENT_SIDE_URL: Joi.string()
     .required()
-    .description('Circa client-side URL'),
-  CIRCA_DEV_EMAIL: Joi.string()
+    .description('Hi-cart client-side URL'),
+  HI_CART_DEV_EMAIL: Joi.string()
     .required()
-    .description('Official email for circa')
+    .description('Official email for hi-cart')
 })
   .unknown()
   .required();
@@ -50,7 +50,7 @@ const config = {
     port: envVars.MONGO_PORT
   },
   clientSideUrl: envVars.CLIENT_SIDE_URL,
-  circa_email: envVars.CIRCA_DEV_EMAIL
+  hi_cart_email: envVars.HI_CHAT_DEV_EMAIL
 };
 
 module.exports = config;

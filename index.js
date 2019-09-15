@@ -4,11 +4,12 @@ const util = require('util');
 
 // config should be imported before importing any other file
 const config = require('./config/env');
-const app = require('./api/app');
+
+const app = require('./app');
 
 const server = http.Server(app);
 
-const debug = require('debug')('circa:index');
+const debug = require('debug')('hi-chat:index');
 
 // make bluebird default Promise
 Promise = require('bluebird'); // eslint-disable-line no-global-assign

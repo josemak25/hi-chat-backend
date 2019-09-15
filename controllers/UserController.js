@@ -1,24 +1,13 @@
 const httpStatus = require('http-status');
-const { UserQuery } = require('../models//index');
-const sendResponse = require('../../helpers/response');
+const { UserQuery } = require('../models/index');
+const sendResponse = require('../helpers/response');
 const bcryptService = require('../services/bcrypt.service');
 const authService = require('../services/auth.service');
 
 const UserController = () => {
   const signup = async (req, res, next) => {
     try {
-      const { name, email, phone, password, password2, user_type } = req.body;
-
-      if (password !== password2) {
-        return res.json(
-          sendResponse(
-            httpStatus.BAD_REQUEST,
-            'Passwords does not match',
-            {},
-            { password: 'password does not match' }
-          )
-        );
-      }
+      const { fullName, email, password, isAdmin } = req.body;
 
       const userExist = await UserQuery.getOne({ email });
 
@@ -26,19 +15,18 @@ const UserController = () => {
         return res.json(
           sendResponse(
             httpStatus.BAD_REQUEST,
-            'email has been taken',
+            'Email address is already registered with us',
             {},
-            { email: 'email has been taken' }
+            { email: 'Email address is already registered with us' }
           )
         );
       }
 
       const user = await UserQuery.create({
-        name,
+        fullName,
         email,
-        phone,
         password,
-        user_type
+        isAdmin
       });
 
       return res.json(sendResponse(httpStatus.OK, 'success', user, null));
@@ -51,36 +39,35 @@ const UserController = () => {
     try {
       const { email, password } = req.body;
 
-      const userExist = await UserQuery.getOne({ email });
+      const user = await UserQuery.getOne({ email });
 
-      if (!userExist) {
+      if (!user) {
         return res.json(
           sendResponse(
             httpStatus.NOT_FOUND,
-            'User does not exist',
+            'Email address is not registered with us',
             {},
-            { error: 'User does not exist' }
+            { error: 'Email address is not registered with us' }
           )
         );
       }
 
-      const correctPassword = await bcryptService().comparePassword(password, userExist.password);
+      const correctPassword = await bcryptService().comparePassword(password, user.password);
 
       if (!correctPassword) {
         return res.json(
           sendResponse(
             httpStatus.BAD_REQUEST,
-            'invalid email or password',
+            'Invalid email or password',
             {},
-            { error: 'invalid email or password' }
+            { error: 'Invalid email or password' }
           )
         );
       }
 
-      // to issue token with the user object, convert it to JSON
-      const token = authService().issue(userExist.toJSON());
+      const token = authService().issue(user.toJSON());
 
-      return res.json(sendResponse(httpStatus.OK, 'success', userExist, null, token));
+      return res.json(sendResponse(httpStatus.OK, 'success', user, null, token));
     } catch (err) {
       next(err);
     }
@@ -103,4 +90,4 @@ const UserController = () => {
   };
 };
 
-module.exports = UserController;
+module.exports = UserController();

@@ -1,15 +1,11 @@
+const { Router } = require('express');
+const router = Router();
 const { celebrate: validate } = require('celebrate');
-const paramValidation = require('../api/validations/user.validation');
+const paramValidation = require('../validations/user.validation');
+const User = require('../controllers/UserController');
 
-const publicRoutes = {
-  'POST /signup': {
-    path: 'UserController.signup',
-    middlewares: [validate(paramValidation.createUser, { abortEarly: false })]
-  },
-  'POST /login': {
-    path: 'UserController.login',
-    middlewares: [validate(paramValidation.loginUser, { abortEarly: false })]
-  }
-};
+router.post('/signup', validate(paramValidation.createUser, { abortEarly: false }), User.signup);
 
-module.exports = publicRoutes;
+router.post('/login', validate(paramValidation.loginUser, { abortEarly: false }), User.login);
+
+module.exports = router;

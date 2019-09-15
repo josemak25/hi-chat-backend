@@ -3,7 +3,7 @@ const { Joi } = require('celebrate');
 module.exports = {
   createUser: {
     body: {
-      name: Joi.string()
+      fullName: Joi.string()
         .max(200)
         .required(),
       email: Joi.string()
@@ -14,13 +14,10 @@ module.exports = {
         .min(6)
         .max(255)
         .required(),
-      password2: Joi.string()
-        .min(6)
-        .max(255)
-        .required(),
-      user_type: Joi.string()
+      isAdmin: Joi.boolean()
     }
   },
+
   loginUser: {
     body: {
       email: Joi.string()

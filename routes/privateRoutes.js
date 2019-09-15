@@ -1,10 +1,10 @@
-const isAdmin = require('../api/middlewares/isAdmin');
+const { Router } = require('express');
+const router = Router();
+const isAdmin = require('../middlewares/isAdmin');
+const authToken = require('../policies/auth.policy');
+const User = require('../controllers/UserController');
 
-const privateRoutes = {
-  'GET /users': {
-    path: 'UserController.getAll',
-    middlewares: [isAdmin]
-  }
-};
+// all admin private routes
+router.route('/users').get(authToken, isAdmin, User.getAll);
 
-module.exports = privateRoutes;
+module.exports = router;

@@ -3,7 +3,7 @@ const bcryptService = require('../services/bcrypt.service');
 
 const schema = new Schema(
   {
-    name: {
+    fullName: {
       type: String,
       lowercase: true,
       trim: true,
@@ -44,7 +44,11 @@ schema.pre('save', async function(next) {
 
 schema.methods.toJSON = function() {
   const user = this.toObject();
+  const { _id } = user;
+  user.id = _id;
   delete user.password;
+  delete user._id;
+  delete user.__v;
   return user;
 };
 

@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const sendResponse = require('../../helpers/response');
+const sendResponse = require('../helpers/response');
 
 module.exports = (req, res, next) => {
   const { isAdmin } = req.token;

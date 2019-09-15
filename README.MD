@@ -1,6 +1,6 @@
-# circa express-rest-api-backend
+# hi-chat express-rest-api-backend
 
-> Circa Express REST API with JWT Authentication mongoose and mongodb
+> Hi-chat Express REST API with JWT Authentication mongoose and mongodb
 
 - authentication via [JWT](https://jwt.io/)
 - routes mapping via [express-routes-mapper](https://github.com/aichbauer/express-routes-mapper)
@@ -8,7 +8,7 @@
 - environments for `development`, `testing`, and `production`
 - linting via [eslint](https://github.com/eslint/eslint)
 - integration tests running with [Jest](https://github.com/facebook/jest)
-- built with [npm sripts](#npm-scripts)
+- built with [npm scripts](#npm-scripts)
 - example for User model and User controller, with jwt authentication, simply type `yarn` and `yarn start`
 
 ## Table of Contents
@@ -584,8 +584,8 @@ Optional:
 - `npm run nodemon` - same as `npm start``
 - `npm run prepush` - a hook wich runs before pushing to a repository, runs `npm test` and `npm run dropDB`
 - `pretest` - runs linting before `npm test`
-- `test-ci` - only runs tests, nothing in pretest, nothing in posttest, for better use with ci tools
+- `test-ci` - only runs tests, nothing in pretest, nothing in post test, for better use with ci tools
 
 ## LICENSE
 
-MIT © Circa
+MIT © Hi-chat

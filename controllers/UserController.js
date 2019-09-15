@@ -75,9 +75,8 @@ const UserController = () => {
 
   const getAll = async (req, res, next) => {
     try {
-      const query = req.body;
-      const users = await UserQuery.getAll(query);
-      return res.json(sendResponse(httpStatus.OK, 'success', users, null, token));
+      const users = await UserQuery.getAll({ isAdmin: false });
+      return res.json(sendResponse(httpStatus.OK, 'success', users, null));
     } catch (err) {
       next(err);
     }
@@ -90,4 +89,4 @@ const UserController = () => {
   };
 };
 
-module.exports = UserController();
+module.exports = UserController;

@@ -29,8 +29,8 @@ const PostController = () => {
 
       const user = await UserQuery.getOne({ email });
 
-      if (user_id === user._id) {
-        await PostQuery.remove({ _id: post_id });
+      if (user_id == user._id) {
+        await PostQuery.delete({ _id: post_id });
       }
 
       return res.json(sendResponse(httpStatus.OK, 'success', 'Post deleted successfully', null));

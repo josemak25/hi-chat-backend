@@ -18,8 +18,8 @@ class Queries {
     return this.Model.findOneAndUpdate(where, payload, { new: true }).exec();
   }
 
-  remove(payload) {
-    return this.Model.delete(payload).exec();
+  delete(payload) {
+    return this.Model.findOneAndDelete(payload).exec();
   }
 }
 

@@ -20,25 +20,6 @@ const PostController = () => {
     }
   };
 
-  const deletePost = async (req, res, next) => {
-    try {
-      const {
-        params: { post_id },
-        token: { id: user_id, email }
-      } = req;
-
-      const user = await UserQuery.getOne({ email });
-
-      if (user_id == user._id) {
-        await PostQuery.delete({ _id: post_id });
-      }
-
-      return res.json(sendResponse(httpStatus.OK, 'success', 'Post deleted successfully', null));
-    } catch (err) {
-      next(err);
-    }
-  };
-
   const getUserPosts = async (req, res, next) => {
     try {
       const {
@@ -61,11 +42,30 @@ const PostController = () => {
     }
   };
 
+  const deletePost = async (req, res, next) => {
+    try {
+      const {
+        params: { post_id },
+        token: { id: user_id, email }
+      } = req;
+
+      const user = await UserQuery.getOne({ email });
+
+      if (user_id == user._id) {
+        await PostQuery.delete({ _id: post_id });
+      }
+
+      return res.json(sendResponse(httpStatus.OK, 'success', 'Post deleted successfully', null));
+    } catch (err) {
+      next(err);
+    }
+  };
+
   return {
     create,
-    deletePost,
+    getUserPosts,
     getAll,
-    getUserPosts
+    deletePost
   };
 };
 

@@ -9,8 +9,9 @@ const schema = new Schema(
       required: true
     },
     user_id: {
-      type: String,
-      required: true
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'user'
     },
     likes: {
       type: Number,
@@ -22,6 +23,10 @@ const schema = new Schema(
   },
   { timestamps: { createdAt: 'createdAt' } }
 );
+
+schema.pre('update', function() {
+  this.update({}, { $set: { likes: new Date() } });
+});
 
 schema.methods.toJSON = function() {
   const post = this.toObject();

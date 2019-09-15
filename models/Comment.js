@@ -9,12 +9,14 @@ const schema = new Schema(
       required: true
     },
     user_id: {
-      type: String,
-      required: true
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'user'
     },
     post_id: {
-      type: String,
-      required: true
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'post'
     }
   },
   { timestamps: { createdAt: 'createdAt' } }

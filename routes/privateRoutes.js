@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const router = Router();
 const isAdmin = require('../middlewares/isAdmin');
-const { User, Post, Comment } = require('../controllers/index');
+const { User, Post, Comment, Reaction } = require('../controllers/index');
 const postValidation = require('../validations/post.validation');
 const commentValidation = require('../validations/comment.validation');
 const { celebrate: validate } = require('celebrate');
@@ -50,6 +50,15 @@ router.route('/posts').get(Post.getAll);
  * @returns {String}
  */
 router.route('/delete-post/:post_id').delete(Post.deletePost);
+
+/*:::::::::::::::::::::::::::::::::::::::::::::::::::::::: ALL LIKE ROUTES ::::::::::::::::::::::::::::::::::::::::::::::::::*/
+
+/**
+ * Returns a post object with post information when post is liked.
+ * @property {Boolean} true || false - Object of Post model.
+ * @returns {Object}
+ */
+router.route('/post/:post_id/:react').get(Reaction.react);
 
 /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::: ALL COMMENT ROUTES ::::::::::::::::::::::::::::::::::::::::::::::::::*/
 

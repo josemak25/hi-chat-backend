@@ -2,7 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const schema = new Schema(
   {
-    body: {
+    post: {
       type: String,
       trim: true,
       maxlength: 1500,
@@ -18,12 +18,19 @@ const schema = new Schema(
     },
     image: {
       type: String
-    },
-    category: {
-      type: String
     }
   },
   { timestamps: { createdAt: 'createdAt' } }
 );
+
+schema.methods.toJSON = function() {
+  const post = this.toObject();
+  const { _id } = post;
+  post.id = _id;
+  delete post.updatedAt;
+  delete post._id;
+  delete post.__v;
+  return post;
+};
 
 module.exports = model('post', schema);

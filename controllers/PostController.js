@@ -5,16 +5,16 @@ const sendResponse = require('../helpers/response');
 const PostController = () => {
   const create = async (req, res, next) => {
     try {
-      const { body, likes, user_id, image } = req.body;
+      const { post, likes, user_id, image } = req.body;
 
-      const post = await PostQuery.create({
-        body,
+      const newPost = await PostQuery.create({
+        post,
         likes,
         user_id,
         image
       });
 
-      return res.json(sendResponse(httpStatus.OK, 'success', post, null));
+      return res.json(sendResponse(httpStatus.OK, 'success', newPost, null));
     } catch (err) {
       next(err);
     }
@@ -33,9 +33,20 @@ const PostController = () => {
         await PostQuery.remove({ _id: post_id });
       }
 
-      return res.json(
-        sendResponse(httpStatus.OK, 'success', 'Post deleted successfully', null, token)
-      );
+      return res.json(sendResponse(httpStatus.OK, 'success', 'Post deleted successfully', null));
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  const getUserPosts = async (req, res, next) => {
+    try {
+      const {
+        token: { id: user_id }
+      } = req;
+
+      const posts = await PostQuery.getAll({ _id: user_id });
+      return res.json(sendResponse(httpStatus.OK, 'success', posts, null));
     } catch (err) {
       next(err);
     }
@@ -43,12 +54,8 @@ const PostController = () => {
 
   const getAll = async (req, res, next) => {
     try {
-      const {
-        token: { id: user_id }
-      } = req;
-
-      const posts = await PostQuery.getAll({ _id: user_id });
-      return res.json(sendResponse(httpStatus.OK, 'success', posts, null, token));
+      const posts = await PostQuery.getAll({});
+      return res.json(sendResponse(httpStatus.OK, 'success', posts, null));
     } catch (err) {
       next(err);
     }
@@ -57,8 +64,9 @@ const PostController = () => {
   return {
     create,
     deletePost,
-    getAll
+    getAll,
+    getUserPosts
   };
 };
 
-module.exports = PostController();
+module.exports = PostController;

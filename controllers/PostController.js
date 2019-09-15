@@ -45,7 +45,7 @@ const PostController = () => {
         token: { id: user_id }
       } = req;
 
-      const posts = await PostQuery.getAll({ _id: user_id });
+      const posts = await PostQuery.getAll({ user_id });
       return res.json(sendResponse(httpStatus.OK, 'success', posts, null));
     } catch (err) {
       next(err);

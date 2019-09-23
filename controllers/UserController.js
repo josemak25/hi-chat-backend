@@ -67,10 +67,6 @@ const UserController = () => {
 
       const token = authService().issue(user.toJSON());
 
-      req.webSocket.on('connection', () => {
-        req.webSocket.emit('login notification', { user });
-      });
-
       return res.json(sendResponse(httpStatus.OK, 'success', user, null, token));
     } catch (err) {
       next(err);

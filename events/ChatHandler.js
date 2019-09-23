@@ -1,7 +1,7 @@
-const SocketIO = require('../config/socket');
+const { getCachedSocket } = require('../config/socket');
 // const saveChatToDB = require('')
 
-const socket = SocketIO.getCachedSocket();
+const socket = getCachedSocket();
 
 const ChatHandler = socket => {
   // setup event listener
@@ -42,4 +42,4 @@ const ChatHandler = socket => {
   });
 };
 
-module.exports = ChatHandler(socket);
+ChatHandler(socket);

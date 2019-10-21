@@ -2,7 +2,7 @@ const { Router } = require('express');
 const router = Router();
 const { celebrate: validate } = require('celebrate');
 const paramValidation = require('../validations/user.validation');
-const User = require('../controllers/UserController');
+const { User } = require('../controllers/index');
 
 router.post('/signup', validate(paramValidation.createUser, { abortEarly: false }), User.signup);
 

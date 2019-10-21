@@ -1,4 +1,4 @@
-const express = require('express');
+const { app } = require('./config/socket');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -13,7 +13,6 @@ const error = require('./config/errors');
 const auth = require('./policies/auth.policy');
 const { env } = require('./config/env');
 
-const app = express();
 // secure apps by setting various HTTP headers
 app.use(helmet());
 app.use(cors({ credentials: true, origin: true }));
@@ -34,7 +33,7 @@ if (env === 'development') {
   app.use(
     expressWinston.logger({
       winstonInstance,
-      meta: true, // optional: log meta data about request (defaults to true)
+      meta: false, // optional: log meta data about request (defaults to true)
       msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
       colorStatus: true // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
     })
@@ -67,5 +66,3 @@ if (env !== 'test') {
 
 // error handler, send stacktrace only during development
 app.use(error.handler);
-
-module.exports = app;

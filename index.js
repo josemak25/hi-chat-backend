@@ -1,13 +1,10 @@
 const mongoose = require('mongoose');
-const http = require('http');
 const util = require('util');
+
+const { server } = require('./config/socket');
 
 // config should be imported before importing any other file
 const config = require('./config/env');
-
-const app = require('./app');
-
-const server = http.Server(app);
 
 const debug = require('debug')('hi-chat:index');
 
@@ -37,12 +34,10 @@ if (config.mongooseDebug) {
   });
 }
 
-//opens a port if the envirnoment is not test
+//opens a port if the environment is not test
 if (process.env.NODE_ENV !== 'test') {
   // listen on port config.port
   server.listen(config.port, () => {
     console.info(`server started on port ${config.port} (${config.env})`); // eslint-disable-line no-console
   });
 }
-
-module.exports = server;

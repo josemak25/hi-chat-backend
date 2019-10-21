@@ -46,7 +46,7 @@ const config = {
   jwtSecret: envVars.JWT_SECRET,
   jwtExpirationInterval: envVars.JWT_EXPIRATION_INTERVAL,
   mongo: {
-    host: process.env.NODE_ENV === 'development' ? envVars.MONGO_HOST : envVars.MONGO_HOST_TEST,
+    host: process.env.NODE_ENV !== 'development' ? envVars.MONGO_HOST : envVars.MONGO_HOST_TEST,
     port: envVars.MONGO_PORT
   },
   clientSideUrl: envVars.CLIENT_SIDE_URL,
